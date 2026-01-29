@@ -80,7 +80,6 @@ def extract_landmarks():
             print(f"Saved {letter}.npy: {np_data.shape} samples")
         else:
             print(f"No landmarks found for {letter} in any folder")
-s
 # ================= RUN =================
 extract_landmarks()
 hands.close()
