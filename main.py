@@ -8,7 +8,7 @@ import time
 import threading
 
 
-# Import our modules
+# Import modules
 try:
     sys.path.append('src')
 except:
@@ -33,7 +33,7 @@ LABELS_PATH = "models/alphabet_labels_24letters.npy"
 SUPABASE_URL = "https://wqqckkuycvthvizcwfgn.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxcWNra3V5Y3Z0aHZpemN3ZmduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYxNDcxMDYsImV4cCI6MjA4MTcyMzEwNn0.d2mfBuqKG8g4NSLb-EMCnzd-U-_mH35FwOxsbjbuGQ8"
 
-#NEW: Per-letter confidence thresholds (PRODUCTION FIX)
+#Per-letter confidence thresholds 
 CONFIDENCE_THRESHOLDS = {
     'N': 0.75,
     'M': 0.72,
@@ -41,8 +41,6 @@ CONFIDENCE_THRESHOLDS = {
     'S': 0.70,
     'default': 0.60
 }
-# ---------------------
-
 
 MODE_SPELLING = "SPELLING"
 MODE_GESTURE = "GESTURE"
@@ -59,7 +57,6 @@ def draw_ui_box(overlay, x, y, w, h, color=(0, 0, 0), alpha=0.5):
 def draw_text(img, text, x, y, font_scale=0.6, color=(255, 255, 255), thickness=1):
     cv2.putText(img, text, (x + 1, y + 1), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 0), thickness + 2, cv2.LINE_AA)
     cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness, cv2.LINE_AA)
-# ---------------------------
 
 
 def main():
@@ -278,7 +275,7 @@ def main():
                             status_color = (255, 165, 0)
 
 
-            # FIXED CMD LOCK (Only when idle + no spelling)
+            # CMD LOCK 
             if (
                 gesture_ctrl.is_potential_gesture()
                 and current_word == ""
@@ -289,27 +286,27 @@ def main():
 
             elif spelling_cooldown_frames == 0 and system_mode == MODE_SPELLING:
                 x_raw = np.array([c for pt in lm_list for c in pt], dtype=np.float32)
-                # 1. Calculate features for THIS frame
+                # Calculate features for THIS frame
                 this_frame_features = featurize_pose(x_raw).reshape(1, -1)
-                # 2. Add to buffer
+                # Add to buffer
                 feature_buffer.append(this_frame_features)
-                # 3. Average the features across the buffer (Smoothing)
+                # Average the features across the buffer (Smoothing)
                 avg_features = np.mean(np.array(feature_buffer), axis=0)
-                # 4. Predict on the AVERAGED features
+                # Predict on the AVERAGED features
                 preds = model.predict(avg_features, verbose=0)[0]
                 idx = np.argmax(preds)
                 conf = preds[idx]
 
-                # FIXED: Confidence-aware acceptance (REPLACES if conf > 0.60:)
+                # Confidence-aware acceptance (REPLACES if conf > 0.60:)
                 detected_raw = labels[idx]
                 required_conf = CONFIDENCE_THRESHOLDS.get(detected_raw, CONFIDENCE_THRESHOLDS['default'])
 
                 if conf < required_conf:
                     continue  # reject unstable prediction
 
-                # --- NEW: GEOMETRIC TIE-BREAKER FOR N/M/T/A/S ---
+               
                 
-                # Refine the prediction using raw geometry (Tie-Breaker)
+                # Tie-Breaker
                 detected_refined = gesture_ctrl.refine_prediction(lm_list, detected_raw, conf)
                 
                 # Convert refined string back to index for buffer consistency
