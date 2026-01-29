@@ -45,3 +45,37 @@ cd sign2sound-model
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+##2. Initialize the Predictor
+
+Before the first run, initialize the predictive memory with the demo vocabulary.
+
+python training/vocab_trainer.py
+
+##3. Run the System
+
+Launch the main inference engine. This will open the camera feed and the broadcasting server.
+
+python main.py
+
+##4. Connect a Remote Display
+
+When the system starts, a Broadcast Window will appear with a QR code.
+
+Scan the QR code with any mobile device or open the session URL.
+
+As you sign, the text will appear on the remote device instantly.
+
+##📊 Performance & Approach
+
+Model Architecture: Multi-Layer Perceptron (MLP) trained on geometric feature vectors.
+
+Dataset: IEEE ASL Fingerspelling Dataset (Static).
+
+Metrics: See training/Performance_Metrics.md for detailed loss curves and confusion matrices.
+
+**Why Static?**
+
+We prioritized high-precision fingerspelling (names, technical terms) over ambiguous continuous signing. The "slow" input speed is compensated by the high-speed predictive text engine, resulting in a net faster communication rate for novel vocabulary.
+
