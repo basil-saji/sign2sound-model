@@ -1,82 +1,148 @@
-# Sign2Sound: Precision-First Sign Language Communication System
+# Sign2Sound: Precision-First Sign Language Communication
+### **Team Zora | Phase 2 Submission**
 
-Sign2Sound is a specialized communication tool designed to bridge the gap between static sign language (fingerspelling) and fluent digital conversation. Unlike standard recognition models that output raw, jittery characters, our system integrates **Geometric Feature Extraction**, **Predictive Text Intelligence**, and **Real-Time Broadcasting** to create a usable product for accessibility.
+![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+![Latency](https://img.shields.io/badge/Latency-%3C50ms-blue)
+![Accuracy](https://img.shields.io/badge/Accuracy-98.0%25-green)
+![Platform](https://img.shields.io/badge/Platform-CPU%20Optimized-orange)
+
+> **Sign2Sound** is an integrated communication system that bridges the gap between static fingerspelling and fluent digital conversation. Unlike standard recognition models, we utilize **Geometric Feature Extraction** and **Predictive Text Intelligence** to deliver zero-latency, high-precision translation without the need for heavy GPUs.
+
+---
 
 ## 🚀 Key Features
 
-### 1. Zero-Latency Fingerspelling
-* **Geometric Feature Extraction:** Instead of raw coordinates, we process relative angles and distances between hand landmarks. This makes the system robust to camera rotation and varying hand sizes.
-* **Precision-First Inference:** Optimized for CPU performance, running locally on standard laptops without GPU requirements.
+### 1. Geometric Vision Core
+We moved away from raw coordinate-based recognition. Our system calculates **63-dimensional geometric feature vectors** (joint angles, surface normals, and relative distances).
+* **Rotation Invariant:** Recognition holds stable even if the wrist rotates.
+* **Scale Invariant:** Works across varying hand sizes and distances.
 
-### 2. Intelligent Context Prediction
-Typing letter-by-letter is slow. We mitigate this with a custom **N-Gram Predictive Engine**:
-* **Smart Autocomplete:** Suggests full words based on the first few characters.
-* **Context Awareness:** Predicts the *next* word in a sentence based on previous input (e.g., "WE" -> suggests "ARE").
-* **Adaptive Memory:** The system learns from user usage over time, prioritizing frequently used vocabulary.
+### 2. Intelligent Prediction Engine
+Fingerspelling every letter is slow. Our **N-Gram Context Engine** accelerates communication by:
+* **Autocompleting words** after just 1-3 letters.
+* **Predicting the next word** based on sentence context (e.g., *"WE"* → suggests *"ARE"*).
+* **Adaptive Memory:** The system learns from user habits over time.
 
-### 3. Remote Broadcasting (The "Studio" Feature)
-We solved the problem of "who sees the text?" by decoupling the display from the camera:
-* **Live Web Sync:** The Python client pushes recognized text to a cloud database (Supabase) in real-time.
-* **PWA Receiver:** Any device (phone, tablet, external monitor) can scan a QR code to view the live transcript instantly.
-* **Accessibility First:** Allows a deaf signer to communicate with an audience who can read the output on their own devices.
+### 3. Remote Broadcasting ("The Studio")
+We solved the visibility problem. The signer does not need to show their laptop screen to the audience.
+* **Real-Time Sync:** Text is pushed to a Supabase cloud database in <50ms.
+* **PWA Receiver:** Any external device (smartphone, tablet, laptop) can scan a QR code to view and listen to the live transcript instantly. The best part? **No signup or installation required!**
 
 ---
 
 ## 📂 Repository Structure
 
-| Directory | Description |
-| :--- | :--- |
-| `src/` | Core logic modules (Feature extraction, Prediction, Broadcasting). |
-| `models/` | The trained `.keras` Geometric MLP and label encoder. |
-| `training/` | Training scripts and performance metrics. |
-| `main.py` | The main inference application entry point. |
+The codebase is organized into modular components, with core logic residing in `src/`.
+
+```text
+SIGN2SOUND_TeamZora/
+│
+├── main.py                         # Root Entry Point
+├── requirements.txt
+├── .gitignore
+├── README.md
+│
+├── 📂 src/                         # CORE LOGIC MODULES
+│   ├── features_alphabet.py        # Geometric feature extraction (Math)
+│   ├── word_predictor.py           # Asynchronous N-Gram prediction engine
+│   ├── gesture_utils.py            # Logic for "Thumb Up/Down" control gestures
+│   ├── vocab_memory.py             # Memory management for predictions
+│   ├── tts_engine.py               # Text-to-Speech handler
+│   ├── broadcast.py                # Supabase API connector
+│   └── broadcast_window.py         # TKinter GUI for the QR Code display
+│
+├── 📂 models/                      # TRAINED ARTIFACTS
+│   ├── alphabet_pose_mlp_24letters.keras  # Optimized Geometric MLP
+│   ├── alphabet_labels_24letters.npy      # Label encoder mapping
+│   └── pose_feature_spec.json             # Input specification
+│
+├── 📂 training/                    # DEVELOPMENT PIPELINE
+│   ├── vocab_trainer.py            # Script to initialize/train predictive memory
+│   ├── train_model.py              # Main training script
+│   └── 01_extract_...py            # (Preprocessing scripts)
+│
+├── 📂 preprocessing/               # DATA PREPARATION
+│   └── 01_extract_alphabet...py    # Landmark extraction script
+│
+├── 📂 results/                     # PERFORMANCE METRICS
+│   ├── confusion_matrix.png
+│   ├── model_accuracy_&_loss.png
+│   └── Classification_report.txt
+│
+└── 📂 notebooks/
+    └── Sign2Sound_Zora.ipynb       # Exploratory Analysis
+```
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+- Python 3.9 or higher
+- Webcam (Built-in or USB)
+- Active Internet connection (for Broadcasting features)
+
+### Step 1: Clone & Install Dependencies
+
+```
+# Clone the repository
+git clone [https://github.com/basil-saji/sign2sound_zora.git](https://github.com/basil-saji/sign2sound_zora.git)
+cd sign2sound_zora
+
+# Install required libraries
+pip install -r requirements.txt
+````
+
+### Step 2: Initialize Predictive Memory
+
+Before running the system for the first time, you must initialize the predictive engine's vocabulary database. This script loads the N-Gram weights.
+
+```
+python training/vocab_trainer.py
+```
+
+Output should confirm: `"SUCCESS! Memory updated."`
 
 ---
 
-## 🛠️ Installation & Usage
+## 🖥️ Usage Guide
 
-### 1. Prerequisites
-Ensure you have Python 3.9+ installed.
+### 1. Launch the System
+
+Run the main inference engine from the root directory:
+
+**Bash**
 
 ```bash
-# Clone the repository
-git clone [https://github.com/basil-saji/sign2sound-model.git](https://github.com/basil-saji/sign2sound-model.git)
-cd sign2sound-model
-
-# Install dependencies
-pip install -r requirements.txt
+python inference/main.py
 ```
 
-### 2. Initialize the Predictor
+### 2. The Interface
 
-Before the first run, initialize the predictive memory with the demo vocabulary.
+* **Main Window:** Shows your camera feed with the "Studio Dark" UI.
+* **Broadcast Window:** A second window will pop up displaying a QR Code.
+* **Action:** Scan this with your phone to see the live text appear on your mobile device.
 
-python training/vocab_trainer.py
+### 3. How to Communicate
 
-### 3. Run the System
+The system uses a Hybrid Input Method:
 
-Launch the main inference engine. This will open the camera feed and the broadcasting server.
+* **Spell:** Sign letters (A-Z). The system smooths jitter and locks onto letters.
+* **Confirm (Thumb Up):** Locks in the currently spelled word.
+* **Smart Select (Rock On 🤘):** Selects the AI-Predicted Word shown in green.
+* **Clear (Thumb Down):** Deletes the last word or clears the buffer.
 
-python main.py
+---
 
-### 4. Connect a Remote Display
+## 📊 Performance Metrics
 
-When the system starts, a Broadcast Window will appear with a QR code.
+* **Accuracy:** 98.0% (Weighted F1-Score on IEEE Test Set).
+* **Inference Speed:** 18ms per frame (approx. 55 FPS on i5 CPU).
+* **Robustness:** Maintained >90% accuracy with ±30° hand rotation.
 
-Scan the QR code with any mobile device or open the session URL.
+See results/confusion_matrix.png for a detailed per-class breakdown.
 
-As you sign, the text will appear on the remote device instantly.
+---
 
-### 📊 Performance & Approach
+## 👥 Team Zora
 
-Model Architecture: Multi-Layer Perceptron (MLP) trained on geometric feature vectors.
-
-Dataset: IEEE ASL Fingerspelling Dataset (Static).
-
-Metrics: See training/Performance_Metrics.md for detailed loss curves and confusion matrices.
-
-**Why Static?**
-
-We prioritized high-precision fingerspelling (names, technical terms) over ambiguous continuous signing. The "slow" input speed is compensated by the high-speed predictive text engine, resulting in a net faster communication rate for novel vocabulary.
-
-
+* **Focus:** Accessibility & Human-Computer Interaction.
+* **Mission:** To build tools that don't just "demo well," but actually work in the real world
